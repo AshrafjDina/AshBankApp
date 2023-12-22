@@ -6,20 +6,20 @@
 
 // Data
 const account1 = {
-  owner: 'Junior Dina',
+  owner: 'Jonas Schmedtmann',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
 
   movementsDates: [
-    "2019-11-18T21:31:17.178Z",
-    "2019-12-23T07:42:02.383Z",
-    "2020-01-28T09:15:04.904Z",
-    "2020-04-01T10:17:24.185Z",
-    "2020-05-08T14:11:59.604Z",
-    "2020-07-26T17:01:17.194Z",
-    "2020-07-28T23:36:17.929Z",
-    "2020-08-01T10:51:36.790Z",
+    '2019-11-18T21:31:17.178Z',
+    '2019-12-23T07:42:02.383Z',
+    '2020-01-28T09:15:04.904Z',
+    '2020-04-01T10:17:24.185Z',
+    '2020-05-08T14:11:59.604Z',
+    '2020-07-26T17:01:17.194Z',
+    '2020-07-28T23:36:17.929Z',
+    '2020-08-01T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -27,7 +27,7 @@ const account1 = {
 };
 
 const account2 = {
-  owner: 'Jessica Mavis',
+  owner: 'Jessica Davis',
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
@@ -109,6 +109,27 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 //Displaying the Movements taking inn the HTML Div elements directly
 //A.
 
+const formatMovementDate = function(date, locale) {
+    const calcDaysPassed = (date1, date2) => 
+    Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
+
+    const daysPassed = calcDaysPassed(new Date(), date);
+    console.log(daysPassed);
+
+    if (daysPassed === 0) return 'Today';
+    if (daysPassed === 1) return 'Yesterday';
+    if (daysPassed <= 7) return `${daysPassed} days ago`;
+
+    
+      // const day = `${date.getDate()}`.padStart(2, 0);
+      // const month = `${date.getMonth() + 1}`.padStart(2, 0);
+      // const year = date.getFullYear();
+      // return `${day}/${month}/${year}`;
+
+      return new Intl.DateTimeFormat(locale).format(date);
+    
+};
+
 const displayMovements = function (acc, sort = false) {
 
   //Setting the HTML textContent to be = 0.
@@ -120,12 +141,11 @@ const displayMovements = function (acc, sort = false) {
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
-    const date = new Date(acc.movementsDates[i]);
-    const day = `${date.getDate()}`.padStart(2, 0);
-    const month = `${date.getMonth() + 1}`.padStart(2, 0);
-    const year = date.getFullYear();
-    const displayDate = `${day}/${month}/${year}`;
-
+  const date = new Date(acc.movementsDates[i]);
+  const displayDate = formatMovementDate(date, acc.locale);
+  //console.log(displayDate)  
+  
+  
     //HTML string, 
     const html = 
     `<div class="movements__row">
@@ -142,7 +162,6 @@ const displayMovements = function (acc, sort = false) {
   ///displayMovements(account1.movements);
 
 //_______________________________________________________________
-
 
   //B.
   //Displaying the Balance Using the Reduce Payment MethodChangeEvent.
@@ -226,7 +245,7 @@ const displayMovements = function (acc, sort = false) {
     //when loging Inn, the find Mentho is used to locate the user name in order to log in
 
 
-///NB. We can call this function everywhere on the code. it will perform th below tasks always
+    ///NB. We can call this function everywhere on the code. it will perform th below tasks always
 const updateUi = function(acc) {
 
     //Display Movements
@@ -250,6 +269,22 @@ const updateUi = function(acc) {
     updateUi(currentAccount);
     containerApp.style.opacity = 100;
 
+    //EXPERIMENTING API
+    // const now = new Date();
+    // const options = {
+    //   hour: 'numeric',
+    //   minute: 'numeric',
+    //   day: 'numeric',
+    //   month: 'long',
+    //   year: 'numeric',
+    //   weekday: 'long',
+    // };
+    // const locale = navigator.language;
+    // console.log(locale)
+
+    // labelDate.textContent = new Intl.DateTimeFormat
+    // (locale, options).format(now);
+
     btnLogin.addEventListener('click', function (e) {
       e.preventDefault();
 
@@ -267,15 +302,33 @@ const updateUi = function(acc) {
           }`;
           containerApp.style.opacity = 100;
 
+          
+
+          const now = new Date();
+          const options = {
+            hour: 'numeric',
+            minute: 'numeric',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            weekday: 'long',
+          };
+          const locale = navigator.language;
+          console.log(locale)
+      
+          labelDate.textContent = new Intl.DateTimeFormat
+          (locale, options).format(now);
+
           //set date outside the Call back function.
           //As you log inn, dates will apear
-            const now = new Date();
-            const day = `${now.getDate()}`.padStart(2, 0);
-            const month = `${now.getMonth() + 1}`.padStart(2, 0);
-            const year = now.getFullYear();
-            const hour = now.getHours();
-            const min = now.getMinutes();
-            labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
+
+            // const now = new Date();
+            // const day = `${now.getDate()}`.padStart(2, 0);
+            // const month = `${now.getMonth() + 1}`.padStart(2, 0);
+            // const year = now.getFullYear();
+            // const hour = now.getHours();
+            // const min = now.getMinutes();
+            // labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
 
         //Clear Inputs field once Logged inn including the password
         inputLoginUsername.value = inputLoginPin.value = ''; 
@@ -468,6 +521,24 @@ if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     */
 
     //_______________________________________________________________
+      //Day and DATES SetUp
+    /*
+    const future = new Date(2037, 10, 19, 15, 23);
+    console.log(+future);
+
+    const calcDaysPassed = (date1, date2) => 
+    Math.abs(date2 - date1) / (1000 * 60 * 60 * 24);
+
+    const days1 = calcDaysPassed(new Date(2037, 3, 4),
+    new Date(2037, 3, 14));
+    console.log(days1);
+    */
+
+    //_______________________________________________________________
+    //Internationalizing, A Javascript API that can make an Application to suit different 
+    //trings acccording to a particulor country
+
+    
     
 
 
