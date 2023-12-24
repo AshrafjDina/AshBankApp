@@ -21,8 +21,8 @@ const account1 = {
     '2020-07-28T23:36:17.929Z',
     '2020-08-01T10:51:36.790Z',
   ],
-  currency: 'EUR',
-  locale: 'pt-PT', // de-DE
+  currency: 'ZAR',
+  locale: 'ZAR', // de-DE
 
 };
 
@@ -42,8 +42,8 @@ const account2 = {
     '2020-06-25T18:49:59.371Z',
     '2020-07-26T12:01:20.894Z',
   ],
-  currency: 'USD',
-  locale: 'en-US',
+  currency: 'ZAR',
+  locale: 'ZAR',
 
 };
 
@@ -114,7 +114,7 @@ const formatMovementDate = function(date, locale) {
     Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
 
     const daysPassed = calcDaysPassed(new Date(), date);
-    console.log(daysPassed);
+    //console.log(daysPassed);
 
     if (daysPassed === 0) return 'Today';
     if (daysPassed === 1) return 'Yesterday';
@@ -129,6 +129,14 @@ const formatMovementDate = function(date, locale) {
       return new Intl.DateTimeFormat(locale).format(date);
     
 };
+
+//_____________Creating a reusable function for the Currency.
+  const formatCur = function (value, locale, currency) {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+    }).format(value);
+  };
 
 const displayMovements = function (acc, sort = false) {
 
@@ -145,14 +153,16 @@ const displayMovements = function (acc, sort = false) {
   const displayDate = formatMovementDate(date, acc.locale);
   //console.log(displayDate)  
   
-  
+    //creating a variable to format the International Currency.
+    const formattedMov = formatCur(mov, acc.locale, acc.currency);
+
     //HTML string, 
     const html = 
     `<div class="movements__row">
     <div class="movements__type 
     movements__type--${type}"> ${i + 1} ${type}</div>
     <div class="movements__date">${displayDate}</div>
-    <div class="movements__value">${mov.toFixed(2)}<\div>
+    <div class="movements__value">${formattedMov}<\div>
     </div> 
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -171,7 +181,10 @@ const displayMovements = function (acc, sort = false) {
 
   const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce( (acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `R ${acc.balance.toFixed(2)}`;
+
+  //const formattedMov = formatCur(acc.balance, acc.locale, acc.currency);
+
+  labelBalance.textContent = formatCur(acc.balance, acc.locale, acc.currency);     //Duplicate to change the currency
 
   };
   ///calcDisplayBalance(account1.movements);
@@ -186,7 +199,8 @@ const displayMovements = function (acc, sort = false) {
   const incomes = acc.movements
   .filter(mov => mov > 0)
   .reduce( (acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `R${incomes.toFixed(2)}`;
+  labelSumIn.textContent = formatCur(incomes, acc.locale, acc.currency);     //Duplicate to change the currency
+  //`R${incomes.toFixed(2)}`;
 
 //Display SUMMARY of Money-Out the Account
 //C2
@@ -194,7 +208,8 @@ const displayMovements = function (acc, sort = false) {
   const out = acc.movements
   .filter(mov => mov < 0)
   .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `R${Math.abs(out).toFixed(2)}`;
+  labelSumOut.textContent = formatCur(Math.abs(out), acc.locale, acc.currency);     //Duplicate to change the currency
+  //`R${Math.abs(out).toFixed(2)}`;
 
 //Display SUMMARY of the ENTEREST charged per Deposit
 //C3
@@ -203,7 +218,8 @@ const displayMovements = function (acc, sort = false) {
   .filter(mov => mov > 0)
   .map(deposit => (deposit * acc.interestRate) / 100)
   .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `R${interest.toFixed(2)}`;
+  labelSumInterest.textContent = formatCur(interest, acc.locale, acc.currency);
+  //`R${interest.toFixed(2)}`;
 
   };
   ////calcDisplaySummary(account1.movements);
@@ -258,32 +274,49 @@ const updateUi = function(acc) {
     //removed the ".movements so that the interest can be globally for all the accounts"
     calcDisplaySummary(acc);
 
-}
+};
+
+const startLogOutTimer = function() {
+
+  const tick = function() { 
+    const min= String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+
+  //In each call, print the remaining time ti UI
+  labelTimer.textContent = `${min}:${sec}`;
+
+  
+
+  //wHEN 0 sECONDS, STOP TIMER AND LOG OUT USER
+
+  if (time === 0) {
+    clearInterval(timer);
+    labelWelcome.textContent = 'Log in to get Started'
+    containerApp.style.opacity = 0;
+  }
+
+  //Decrese 1'sec
+  time--;
+
+};
+
+  //St time to 5 minutes
+    let time = 60;
+  //Call the timer every second
+  tick()
+  const timer = setInterval(tick, 1000)
+  return timer;
+
+};
   //_______________________________
   //Event Handlers
 
-  let currentAccount;
+  let currentAccount, timer;
 
     // FAKE ALWAYS LOGGED IN
-    currentAccount = account1;
-    updateUi(currentAccount);
-    containerApp.style.opacity = 100;
-
-    //EXPERIMENTING API
-    // const now = new Date();
-    // const options = {
-    //   hour: 'numeric',
-    //   minute: 'numeric',
-    //   day: 'numeric',
-    //   month: 'long',
-    //   year: 'numeric',
-    //   weekday: 'long',
-    // };
-    // const locale = navigator.language;
-    // console.log(locale)
-
-    // labelDate.textContent = new Intl.DateTimeFormat
-    // (locale, options).format(now);
+    // currentAccount = account1;
+    // updateUi(currentAccount);
+    // containerApp.style.opacity = 100;
 
     btnLogin.addEventListener('click', function (e) {
       e.preventDefault();
@@ -311,10 +344,10 @@ const updateUi = function(acc) {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
-            weekday: 'long',
+            //weekday: 'long',
           };
           const locale = navigator.language;
-          console.log(locale)
+          //console.log(locale)
       
           labelDate.textContent = new Intl.DateTimeFormat
           (locale, options).format(now);
@@ -333,6 +366,10 @@ const updateUi = function(acc) {
         //Clear Inputs field once Logged inn including the password
         inputLoginUsername.value = inputLoginPin.value = ''; 
         inputLoginPin.blur();
+         
+        //Timer
+        if (timer) clearInterval(timer);
+        timer = startLogOutTimer();
 
         updateUi(currentAccount)   //[Re-call the function to update the UI]
         
@@ -380,7 +417,13 @@ const updateUi = function(acc) {
           receiverAcc.movementsDates.push(new Date().
           toISOString());
 
-          updateUi(currentAccount)   //[Re-call the function to update the UI]
+          updateUi(currentAccount);  //[Re-call the function to update the UI]
+
+          // Reset Timer
+          //clear the interval  and reset the timer with a global variable
+          clearInterval(timer);
+          timer = startLogOutTimer();
+
         }
 
   });
@@ -399,7 +442,8 @@ btnLoan.addEventListener('click', function (e) {
 const amount = Math.floor(inputLoanAmount.value);
 // The Loan can only take place if you have 10% of what you requesting
 if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-
+ 
+  setTimeout(function () { 
     //add the movement
     currentAccount.movements.push(amount);
 
@@ -408,12 +452,21 @@ if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
 
     //Update UI
     updateUi(currentAccount)  //[Re-call the function to update the UI]
+
+    
+  }, 2500);
+
+
   }
+
+  // Reset Timer
+    //clear the interval  and reset the timer with a global variable
+    clearInterval(timer);
+    timer = startLogOutTimer();
 
   inputLoanAmount.value = '';
 
-
-})
+});
 
 //_______________________________________
    // THE FINDINDEX METHOD
@@ -537,6 +590,10 @@ if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     //_______________________________________________________________
     //Internationalizing, A Javascript API that can make an Application to suit different 
     //trings acccording to a particulor country
+    
+
+
+
 
     
     
